@@ -1,0 +1,30 @@
+import { google } from 'googleapis';
+import * as functions from 'firebase-functions';
+
+const calendar = google.calendar({ version: 'v3' });
+
+export const syncEventWithGoogleCalendar = functions.firestore
+  .document('events/{eventId}')
+  .onUpdate(async (change, context) => {
+    const event = change.after.data();
+    const accessToken = event.googleAccessToken; // Assumed access token stored in event
+
+    if (accessToken) {
+      const googleEvent = {
+        summary: event.title,
+        start: { dateTime: event.date },
+        end: { dateTime: new Date(new Date(event.date).getTime() + 60 * 60 * 1000).toISOString() },
+      };
+
+      try {
+        const res = await calendar.events.insert({
+          calendarId: 'primary',
+          auth: accessToken,
+          requestBody: googleEvent,
+        });
+        console.log('Event added to Google Calendar:', res.data.id);
+      } catch (error) {
+        console.error('Error adding event to Google Calendar:', error);
+      }
+    }
+  });
