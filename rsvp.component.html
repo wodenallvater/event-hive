@@ -1,0 +1,7 @@
+<div>
+  <h2>RSVP for Event</h2>
+  <form (ngSubmit)="rsvp()">
+    <input type="text" [(ngModel)]="name" name="name" placeholder="Your name" required />
+    <button type="submit">RSVP</button>
+  </form>
+</div>
